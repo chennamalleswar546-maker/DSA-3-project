@@ -1,0 +1,1051 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SOS Subset Optimization Tool</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: #f4f6fb;
+            color: #222;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 30px;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            font-size: 15px;
+        }
+
+        .container {
+            width: 92%;
+            max-width: 1200px;
+            margin: 25px auto;
+        }
+
+        .card {
+            background: white;
+            padding: 22px;
+            margin-bottom: 20px;
+            border-radius: 12px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+        }
+
+        .card h2 {
+            color: #5d3fd3;
+            margin-bottom: 15px;
+        }
+
+        .input-area {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        input {
+            flex: 1;
+            min-width: 250px;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 7px;
+            font-size: 15px;
+        }
+
+        button {
+            border: none;
+            padding: 12px 20px;
+            border-radius: 7px;
+            cursor: pointer;
+            color: white;
+            background: #667eea;
+            font-size: 15px;
+        }
+
+        button:hover {
+            background: #5538c7;
+        }
+
+        .danger {
+            background: #e74c3c;
+        }
+
+        .success {
+            background: #27ae60;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .info-box {
+            background: #f1f3ff;
+            padding: 18px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .info-box h3 {
+            color: #5d3fd3;
+            font-size: 25px;
+        }
+
+        .info-box p {
+            margin-top: 5px;
+            color: #555;
+        }
+
+        .query-area {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th {
+            background: #667eea;
+            color: white;
+            padding: 10px;
+        }
+
+        td {
+            padding: 9px;
+            border-bottom: 1px solid #ddd;
+            text-align: center;
+        }
+
+        tr:hover {
+            background: #f5f5ff;
+        }
+
+        .result {
+            margin-top: 15px;
+            padding: 18px;
+            background: #eef8f0;
+            border-left: 5px solid #27ae60;
+            border-radius: 5px;
+        }
+
+        .performance {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .performance-box {
+            padding: 20px;
+            border-radius: 10px;
+            background: #f8f8ff;
+            text-align: center;
+        }
+
+        .performance-box h3 {
+            color: #5d3fd3;
+            margin-bottom: 10px;
+        }
+
+        .time {
+            font-size: 25px;
+            font-weight: bold;
+        }
+
+        .bar-container {
+            margin-top: 20px;
+        }
+
+        .bar {
+            height: 30px;
+            margin: 10px 0;
+            border-radius: 5px;
+            background: #667eea;
+            color: white;
+            padding: 6px 10px;
+            font-size: 13px;
+        }
+
+        .brute {
+            background: #e67e22;
+        }
+
+        .note {
+            background: #fff7df;
+            border-left: 5px solid #f1c40f;
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 5px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 25px;
+            color: #666;
+        }
+
+        @media(max-width: 700px) {
+            .info-grid,
+            .performance {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        body:not(.logged-in) header,
+        body:not(.logged-in) .container,
+        body:not(.logged-in) footer { display: none; }
+
+        .auth-wrap { width: 92%; max-width: 520px; margin: 45px auto; }
+        .auth-card { background: white; padding: 26px; border-radius: 12px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.10); }
+        .auth-card h2 { color: #5d3fd3; margin-bottom: 16px; }
+        .auth-card input { width: 100%; min-width: 0; margin: 8px 0; }
+        .auth-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
+        .auth-message { margin-top: 12px; color: #b42318; }
+        .top-actions { display: flex; justify-content: center; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+        .history-table { overflow-x: auto; }
+        .small-note { color: #666; font-size: 13px; margin-top: 12px; line-height: 1.5; }
+
+    </style>
+</head>
+
+<body>
+
+
+<div class="auth-wrap" id="authWrap">
+    <div class="auth-card">
+        <h2>Login to SOS Tool</h2>
+        <p>Create an account or log in to use the Subset Optimization Tool.</p>
+        <input id="authUsername" type="text" autocomplete="username" placeholder="Username">
+        <input id="authPassword" type="password" autocomplete="current-password" placeholder="Password">
+        <div class="auth-actions">
+            <button onclick="loginUser()">Login</button>
+            <button class="success" onclick="registerUser()">Create Account</button>
+        </div>
+        <p id="authMessage" class="auth-message" role="status"></p>
+        <p class="small-note">Student/demo version: accounts and history are stored in this browser only. Do not use a real or sensitive password. This is not secure authentication for a public website.</p>
+    </div>
+</div>
+
+
+<header>
+    <h1>SOS Dynamic Programming</h1>
+    <p>Subset Optimization and Query Engine</p>
+    <div class="top-actions"><button class="danger" onclick="logoutUser()">Logout</button></div>
+</header>
+
+<div class="container">
+
+    <!-- USER HISTORY -->
+    <div class="card">
+        <h2>Account History</h2>
+        <p id="historyOwner">History for your current account.</p>
+        <div class="input-area" style="margin-top:12px;">
+            <button class="danger" onclick="clearHistory()">Clear My History</button>
+        </div>
+        <div class="history-table">
+            <table>
+                <thead><tr><th>Date &amp; Time</th><th>Action</th><th>Details</th></tr></thead>
+                <tbody id="historyBody"></tbody>
+            </table>
+        </div>
+        <p class="small-note">History is saved locally in this browser and is separated by username.</p>
+    </div>
+
+
+    <!-- SET INPUT -->
+    <div class="card">
+        <h2>1. Enter Integer Set</h2>
+
+        <div class="input-area">
+            <input
+                type="text"
+                id="setInput"
+                placeholder="Example: 3,5,2,7,4,6"
+                value="3,5,2,7,4,6"
+            >
+
+            <button onclick="initializeSet()">
+                Generate SOS Table
+            </button>
+        </div>
+
+        <div class="note">
+            Maximum input size is <b>20 elements</b>.
+            SOS DP preprocessing takes <b>O(n × 2ⁿ)</b>.
+        </div>
+
+        <div class="info-grid">
+
+            <div class="info-box">
+                <h3 id="elementCount">6</h3>
+                <p>Elements</p>
+            </div>
+
+            <div class="info-box">
+                <h3 id="subsetCount">64</h3>
+                <p>Total Subsets</p>
+            </div>
+
+            <div class="info-box">
+                <h3>O(n × 2ⁿ)</h3>
+                <p>SOS Complexity</p>
+            </div>
+
+        </div>
+    </div>
+
+
+    <!-- QUERY -->
+    <div class="card">
+
+        <h2>2. Subset Query</h2>
+
+        <p>
+            Enter element indexes separated by commas.
+            Example: <b>0,2,4</b>
+        </p>
+
+        <br>
+
+        <div class="query-area">
+
+            <input
+                type="text"
+                id="queryInput"
+                placeholder="Example: 0,2,4"
+            >
+
+            <button onclick="runQuery()">
+                Calculate Subset Sum
+            </button>
+
+        </div>
+
+        <div id="queryResult"></div>
+
+    </div>
+
+
+    <!-- TABLE -->
+    <div class="card">
+
+        <h2>3. SOS DP Subset Table</h2>
+
+        <p>
+            The table shows the bitmask representation,
+            selected subset and calculated subset sum.
+        </p>
+
+        <div style="overflow-x:auto;">
+            <table>
+
+                <thead>
+                    <tr>
+                        <th>Mask</th>
+                        <th>Binary</th>
+                        <th>Subset</th>
+                        <th>Sum</th>
+                    </tr>
+                </thead>
+
+                <tbody id="tableBody"></tbody>
+
+            </table>
+        </div>
+
+    </div>
+
+
+    <!-- PERFORMANCE -->
+    <div class="card">
+
+        <h2>4. Performance Comparison</h2>
+
+        <p>
+            Compare SOS DP with the brute-force approach using random queries.
+        </p>
+
+        <br>
+
+        <div class="query-area">
+
+            <input
+                type="number"
+                id="queryCount"
+                placeholder="Number of queries"
+                value="10000"
+                min="1"
+            >
+
+            <button class="success" onclick="performanceTest()">
+                Run Performance Test
+            </button>
+
+        </div>
+
+        <div id="performanceResult"></div>
+
+    </div>
+
+</div>
+
+<footer>
+    <p>
+        SOS Dynamic Programming Based Subset Optimization and Query Engine
+    </p>
+    <p>
+        DSA-3 | 25CS2103E
+    </p>
+</footer>
+
+
+<script>
+
+const USERS_KEY = "sos_demo_users_v1";
+const HISTORY_KEY = "sos_demo_history_v1";
+let currentUser = "";
+
+function readStoredObject(key) {
+    try { return JSON.parse(localStorage.getItem(key) || "{}"); }
+    catch (error) { return {}; }
+}
+
+function saveHistory(action, details) {
+    if (!currentUser) return;
+    const allHistory = readStoredObject(HISTORY_KEY);
+    if (!Array.isArray(allHistory[currentUser])) allHistory[currentUser] = [];
+    allHistory[currentUser].unshift({
+        date: new Date().toLocaleString(),
+        action: action,
+        details: String(details || "")
+    });
+    allHistory[currentUser] = allHistory[currentUser].slice(0, 100);
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(allHistory));
+    renderHistory();
+}
+
+function renderHistory() {
+    const owner = document.getElementById("historyOwner");
+    const body = document.getElementById("historyBody");
+    if (!owner || !body || !currentUser) return;
+    owner.textContent = "Signed in as: " + currentUser;
+    const allHistory = readStoredObject(HISTORY_KEY);
+    const items = Array.isArray(allHistory[currentUser]) ? allHistory[currentUser] : [];
+    body.replaceChildren();
+    if (items.length === 0) {
+        const row = document.createElement("tr");
+        const cell = document.createElement("td");
+        cell.colSpan = 3;
+        cell.textContent = "No activity yet.";
+        row.appendChild(cell);
+        body.appendChild(row);
+        return;
+    }
+    items.forEach(item => {
+        const row = document.createElement("tr");
+        [item.date, item.action, item.details].forEach(value => {
+            const cell = document.createElement("td");
+            cell.textContent = value;
+            row.appendChild(cell);
+        });
+        body.appendChild(row);
+    });
+}
+
+function getAuthValues() {
+    return {
+        username: document.getElementById("authUsername").value.trim(),
+        password: document.getElementById("authPassword").value
+    };
+}
+
+function registerUser() {
+    const { username, password } = getAuthValues();
+    if (!/^[a-zA-Z0-9_.-]{3,30}$/.test(username)) {
+        document.getElementById("authMessage").textContent =
+            "Username must be 3–30 characters and use letters, numbers, ., _ or -.";
+        return;
+    }
+    if (password.length < 6) {
+        document.getElementById("authMessage").textContent =
+            "Password must contain at least 6 characters.";
+        return;
+    }
+    const users = readStoredObject(USERS_KEY);
+    if (users[username]) {
+        document.getElementById("authMessage").textContent =
+            "That username already exists. Please log in.";
+        return;
+    }
+    // Demo only: localStorage is not secure and does not hash passwords.
+    users[username] = password;
+    localStorage.setItem(USERS_KEY, JSON.stringify(users));
+    signIn(username);
+    saveHistory("Account created", "New local demo account created");
+}
+
+function loginUser() {
+    const { username, password } = getAuthValues();
+    const users = readStoredObject(USERS_KEY);
+    if (!username || !password || users[username] !== password) {
+        document.getElementById("authMessage").textContent =
+            "Invalid username or password. Create an account if you are new.";
+        return;
+    }
+    signIn(username);
+    saveHistory("Login", "Signed in to the SOS tool");
+}
+
+function signIn(username) {
+    currentUser = username;
+    document.body.classList.add("logged-in");
+    document.getElementById("authMessage").textContent = "";
+    document.getElementById("authWrap").style.display = "none";
+    renderHistory();
+    if (elements.length === 0) initializeSet();
+}
+
+function logoutUser() {
+    if (currentUser) saveHistory("Logout", "Signed out of the SOS tool");
+    currentUser = "";
+    document.body.classList.remove("logged-in");
+    document.getElementById("authWrap").style.display = "block";
+    document.getElementById("authPassword").value = "";
+}
+
+function clearHistory() {
+    if (!currentUser) return;
+    if (!confirm("Clear all history for " + currentUser + "?")) return;
+    const allHistory = readStoredObject(HISTORY_KEY);
+    allHistory[currentUser] = [];
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(allHistory));
+    renderHistory();
+}
+
+
+
+let elements = [];
+let n = 0;
+let size = 0;
+let sosTable = [];
+
+
+/* -----------------------------------
+   INITIALIZE SET
+----------------------------------- */
+
+function initializeSet() {
+
+    const input = document
+        .getElementById("setInput")
+        .value
+        .trim();
+
+    if (input === "") {
+        alert("Please enter some integers.");
+        return;
+    }
+
+    try {
+
+        elements = input
+            .split(",")
+            .map(x => Number(x.trim()));
+
+        if (elements.some(x => !Number.isFinite(x))) {
+            alert("Please enter valid integers.");
+            return;
+        }
+
+        n = elements.length;
+
+        if (n === 0) {
+            alert("Set cannot be empty.");
+            return;
+        }
+
+        if (n > 20) {
+            alert("Maximum 20 elements are allowed.");
+            return;
+        }
+
+        size = 2 ** n;
+
+        precomputeSOS();
+
+        document.getElementById("elementCount").innerText = n;
+        document.getElementById("subsetCount").innerText =
+            size.toLocaleString();
+
+        showTable();
+        saveHistory("Generate SOS table", "Elements: " + elements.join(", "));
+
+        document.getElementById("queryResult").innerHTML = "";
+
+        document.getElementById("performanceResult").innerHTML = "";
+
+    }
+    catch(error) {
+        alert("Invalid input.");
+    }
+}
+
+
+/* -----------------------------------
+   SOS DP
+----------------------------------- */
+
+function precomputeSOS() {
+
+    sosTable = new Array(size).fill(0);
+
+    // Store individual elements
+    for (let i = 0; i < n; i++) {
+        sosTable[2 ** i] = elements[i];
+    }
+
+    // SOS Dynamic Programming
+    for (let i = 0; i < n; i++) {
+
+        for (let mask = 0; mask < size; mask++) {
+
+            if ((mask & (2 ** i)) !== 0) {
+
+                sosTable[mask] +=
+                    sosTable[mask ^ (2 ** i)];
+            }
+        }
+    }
+}
+
+
+/* -----------------------------------
+   BINARY REPRESENTATION
+----------------------------------- */
+
+function toBinary(mask) {
+
+    return mask
+        .toString(2)
+        .padStart(n, "0");
+}
+
+
+/* -----------------------------------
+   GET SUBSET
+----------------------------------- */
+
+function subsetOf(mask) {
+
+    let subset = [];
+
+    for (let i = 0; i < n; i++) {
+
+        if ((mask & (2 ** i)) !== 0) {
+
+            subset.push(elements[i]);
+        }
+    }
+
+    return "{" + subset.join(", ") + "}";
+}
+
+
+/* -----------------------------------
+   SHOW TABLE
+----------------------------------- */
+
+function showTable() {
+
+    const tbody =
+        document.getElementById("tableBody");
+
+    tbody.innerHTML = "";
+
+    // Show first 20 rows like Java project
+    const rows = Math.min(size, 20);
+
+    for (let mask = 0; mask < rows; mask++) {
+
+        const row = document.createElement("tr");
+
+        row.innerHTML = `
+            <td>${mask}</td>
+            <td>${toBinary(mask)}</td>
+            <td>${subsetOf(mask)}</td>
+            <td>${sosTable[mask]}</td>
+        `;
+
+        tbody.appendChild(row);
+    }
+
+    if (size > rows) {
+
+        const row = document.createElement("tr");
+
+        row.innerHTML = `
+            <td colspan="4">
+                ... ${size - rows} more subsets not shown
+            </td>
+        `;
+
+        tbody.appendChild(row);
+    }
+}
+
+
+/* -----------------------------------
+   BRUTE FORCE QUERY
+----------------------------------- */
+
+function bruteForceQuery(mask) {
+
+    let sum = 0;
+
+    for (let i = 0; i < n; i++) {
+
+        if ((mask & (2 ** i)) !== 0) {
+
+            sum += elements[i];
+        }
+    }
+
+    return sum;
+}
+
+
+/* -----------------------------------
+   RUN QUERY
+----------------------------------- */
+
+function runQuery() {
+
+    if (elements.length === 0) {
+
+        alert("Generate the SOS table first.");
+        return;
+    }
+
+    const input =
+        document.getElementById("queryInput")
+        .value
+        .trim();
+
+    let mask = 0;
+
+    if (input !== "") {
+
+        const indexes = input
+            .split(",")
+            .map(x => Number(x.trim()));
+
+        for (let index of indexes) {
+
+            if (
+                !Number.isInteger(index) ||
+                index < 0 ||
+                index >= n
+            ) {
+
+                alert(
+                    "Index " +
+                    index +
+                    " is out of range."
+                );
+
+                return;
+            }
+
+            mask |= 2 ** index;
+        }
+    }
+
+    const sosResult = sosTable[mask];
+
+    const bruteResult =
+        bruteForceQuery(mask);
+
+    saveHistory("Subset query", "Indexes: " + (input || "(empty subset)") + "; Sum: " + sosResult);
+
+    document.getElementById("queryResult").innerHTML = `
+
+        <div class="result">
+
+            <h3>Query Result</h3>
+
+            <br>
+
+            <p>
+                <b>Mask:</b>
+                ${toBinary(mask)}
+            </p>
+
+            <p>
+                <b>Subset:</b>
+                ${subsetOf(mask)}
+            </p>
+
+            <br>
+
+            <p>
+                <b>SOS DP:</b>
+                ${sosResult}
+                <small>(O(1) lookup)</small>
+            </p>
+
+            <p>
+                <b>Brute Force:</b>
+                ${bruteResult}
+                <small>(O(n))</small>
+            </p>
+
+        </div>
+    `;
+}
+
+
+/* -----------------------------------
+   PERFORMANCE TEST
+----------------------------------- */
+
+function performanceTest() {
+
+    if (elements.length === 0) {
+
+        alert("Generate the SOS table first.");
+        return;
+    }
+
+    const q =
+        Number(
+            document.getElementById("queryCount")
+            .value
+        );
+
+    if (!Number.isInteger(q) || q <= 0) {
+
+        alert("Enter a valid number of queries.");
+        return;
+    }
+
+
+    // Generate random masks
+    let masks = [];
+
+    for (let i = 0; i < q; i++) {
+
+        masks.push(
+            Math.floor(
+                Math.random() * size
+            )
+        );
+    }
+
+
+    // -------------------------
+    // BRUTE FORCE
+    // -------------------------
+
+    let start =
+        performance.now();
+
+    let checksum1 = 0;
+
+    for (let mask of masks) {
+
+        checksum1 +=
+            bruteForceQuery(mask);
+    }
+
+    let bruteTime =
+        performance.now() - start;
+
+
+    // -------------------------
+    // SOS PREPROCESSING
+    // -------------------------
+
+    start =
+        performance.now();
+
+    precomputeSOS();
+
+    let precomputeTime =
+        performance.now() - start;
+
+
+    // -------------------------
+    // SOS LOOKUP
+    // -------------------------
+
+    start =
+        performance.now();
+
+    let checksum2 = 0;
+
+    for (let mask of masks) {
+
+        checksum2 +=
+            sosTable[mask];
+    }
+
+    let lookupTime =
+        performance.now() - start;
+
+    let sosTime =
+        precomputeTime + lookupTime;
+
+
+    let message = "";
+
+    if (sosTime < bruteTime) {
+
+        const faster =
+            bruteTime / sosTime;
+
+        message = `
+            <p class="result">
+                <b>SOS DP was ${faster.toFixed(2)}× faster
+                across ${q.toLocaleString()} queries.</b>
+            </p>
+        `;
+
+    } else {
+
+        message = `
+            <p class="note">
+                Preprocessing cost has not been recovered yet.
+                Try increasing the number of queries.
+            </p>
+        `;
+    }
+
+
+    saveHistory("Performance test", "Queries: " + q + "; Brute force: " + bruteTime.toFixed(4) + " ms; SOS: " + sosTime.toFixed(4) + " ms");
+
+    document.getElementById(
+        "performanceResult"
+    ).innerHTML = `
+
+        <br>
+
+        <div class="performance">
+
+            <div class="performance-box">
+
+                <h3>Brute Force</h3>
+
+                <div class="time">
+                    ${bruteTime.toFixed(4)} ms
+                </div>
+
+                <p>
+                    O(n) per query
+                </p>
+
+            </div>
+
+
+            <div class="performance-box">
+
+                <h3>SOS DP</h3>
+
+                <div class="time">
+                    ${sosTime.toFixed(4)} ms
+                </div>
+
+                <p>
+                    Preprocessing +
+                    O(1) lookup
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="bar-container">
+
+            <h3>Execution Time</h3>
+
+            <div
+                class="bar brute"
+                style="width:${Math.min(
+                    100,
+                    bruteTime /
+                    Math.max(bruteTime, sosTime) * 100
+                )}%"
+            >
+                Brute Force:
+                ${bruteTime.toFixed(3)} ms
+            </div>
+
+            <div
+                class="bar"
+                style="width:${Math.min(
+                    100,
+                    sosTime /
+                    Math.max(bruteTime, sosTime) * 100
+                )}%"
+            >
+                SOS DP:
+                ${sosTime.toFixed(3)} ms
+            </div>
+
+        </div>
+
+        <br>
+
+        <p>
+            <b>Queries:</b>
+            ${q.toLocaleString()}
+        </p>
+
+        <p>
+            <b>Subsets:</b>
+            ${size.toLocaleString()}
+        </p>
+
+        <p>
+            <b>Checksum Match:</b>
+            ${checksum1 === checksum2 ? "Yes" : "No"}
+        </p>
+
+        ${message}
+    `;
+}
+
+
+/* -----------------------------------
+   LOAD DEFAULT DATA
+----------------------------------- */
+
+// The SOS table is initialized after a user signs in.
+
+</script>
+
+</body>
+</html>
+website
